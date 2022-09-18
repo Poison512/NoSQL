@@ -1,66 +1,67 @@
-const { Schema, model, Types } = require('mongoose');
-const dateFormat = require('../../../../Downloads/18-2/utils/dateFormat');
 
-const ReplySchema = new Schema(
+const { Schema, model, Types} = require('mongoose');
+const dateFormat = require('../utils/dateFormat');
+const ReactionSchema = new Schema (
   {
-    // set custom id to avoid confusion with parent comment _id
-    replyId: {
-      type: Schema.Types.ObjectId,
-      default: () => new Types.ObjectId()
+    reactionId : {
+        type: Schema.Types.ObjectId,
+        default: () => new Types.ObjectId()
     },
-    replyBody: {
-      type: String,
-      required: true
+    reactionBody: {
+        type: String,
+        required: true,
+        maxlendth: 280,
     },
-    writtenBy: {
-      type: String,
-      required: true,
-      trim: true
+    username: {
+        type: String,
+        required: true,
     },
     createdAt: {
-      type: Date,
-      default: Date.now,
-      get: createdAtVal => dateFormat(createdAtVal)
+        type: Date,
+        default: Date.now,
+        get: timestamp => dateFormat(timestamp)
     }
-  },
-  {
-    toJSON: {
-      getters: true
-    }
-  }
-);
-
-const CommentSchema = new Schema(
-  {
-    writtenBy: {
-      type: String,
-      required: true
-    },
-    commentBody: {
-      type: String,
-      required: true
-    },
-    createdAt: {
-      type: Date,
-      default: Date.now,
-      get: createdAtVal => dateFormat(createdAtVal)
-    },
-    // use ReplySchema to validate data for a reply
-    replies: [ReplySchema]
-  },
-  {
-    toJSON: {
+},
+{
+  toJSON: {
       virtuals: true,
-      getters: true
-    },
-    id: false
-  }
+      getters: true,
+  },
+  id: false,
+}
 );
+const ThoughtSchema = new Schema (
+  {
+      thoughtText: {
+        type: String,
+        required: true,
+        minlength: 1,
+        maxlength: 280,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+        get: timestamp => dateFormat(timestamp)
+      },
+      username: {
+        type: String,
+        required: true,
+      },
+      reactions: [ReactionSchema],
+    },
+    {
+        toJSON: {
+            virtuals: true,
+            getters: true,
+        },
+        id: false,
+    }
+)
 
-CommentSchema.virtual('replyCount').get(function() {
-  return this.replies.length;
+ThoughtSchema.virtual("reactionCount").get(function () {
+  return this.reactions.length;
 });
 
-const Comment = model('Comment', CommentSchema);
+const Thought = model("Thought", ThoughtSchema);
 
-module.exports = Comment;
+module.exports = Thought;
